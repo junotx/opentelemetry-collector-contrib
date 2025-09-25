@@ -295,6 +295,14 @@ func stackFrames(dic pprofile.ProfilesDictionary, sample pprofile.Sample) ([]Sta
 
 		frameTypeStr, err := getStringFromAttribute(dic, location, string(semconv.ProfileFrameTypeKey))
 		if err != nil {
+			m := make(map[string]string, location.AttributeIndices().Len())
+			for _, idx32 := range location.AttributeIndices().All() {
+				idx := int(idx32)
+				key := dic.StringTable().At(int(dic.AttributeTable().At(idx).KeyStrindex()))
+				val := dic.AttributeTable().At(idx).Value().AsString()
+				m[key] = val
+			}
+			fmt.Printf("---------------location attributes: %v\n", m)
 			return nil, nil, nil, err
 		}
 		frameTypes = append(frameTypes, libpf.FrameTypeFromString(frameTypeStr))
