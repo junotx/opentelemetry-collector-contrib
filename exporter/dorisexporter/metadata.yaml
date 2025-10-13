@@ -5,6 +5,7 @@ status:
   class: exporter
   stability:
     alpha: [traces, metrics, logs]
+    development: [profiles]
   distributions: [contrib]
   codeowners:
     active: [atoulme, joker-star-l]
