@@ -61,6 +61,8 @@ type Table struct {
 	Traces string `mapstructure:"traces"`
 	// Metrics is the table name for metrics.
 	Metrics string `mapstructure:"metrics"`
+	// Profiles is the table name for profiles.
+	Profiles string `mapstructure:"profiles"`
 }
 
 func (cfg *Config) Validate() (err error) {
