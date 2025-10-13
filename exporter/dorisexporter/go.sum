@@ -111,6 +111,8 @@ go.opentelemetry.io/collector/consumer v1.50.0 h1:Sxbue3zNH3IJla+vUyMXEiomfRJaS6
 go.opentelemetry.io/collector/consumer v1.50.0/go.mod h1:GB6gfWsZyeTBWn+Cb3ITkJaH4aA5NW0r2Dm+VLFnD/M=
 go.opentelemetry.io/collector/consumer/consumererror v0.144.0 h1:bDnvbqp/FSyErSt60HQmDYXEDbWiav49H6m872zbHnw=
 go.opentelemetry.io/collector/consumer/consumererror v0.144.0/go.mod h1:gODumKlgGfW9s5XVnL5dp+glXipaX+PSKX7W4x+FkFI=
+go.opentelemetry.io/collector/consumer/consumererror/xconsumererror v0.144.0 h1:0qN1n+Ws9G0na4fBJGxMRM4av6FfpshlSXYXMNPv6W0=
+go.opentelemetry.io/collector/consumer/consumererror/xconsumererror v0.144.0/go.mod h1:D+/vB9koYy4hQywG0j0lcliFtwo7SMTAG8umeXQAc30=
 go.opentelemetry.io/collector/consumer/consumertest v0.144.0 h1:R2iR10e2rK+9xCCyl/OH0A/SyYzAauFGePovNQlOz90=
 go.opentelemetry.io/collector/consumer/consumertest v0.144.0/go.mod h1:4Mpk+JdFQOjPPxeyRORCgQFWJiCE9Rq0P/6vP3OaNEs=
 go.opentelemetry.io/collector/consumer/xconsumer v0.144.0 h1:7J6FCC2qAR2ZHKYX9hH1zvH0+G8E0mc1FZ1V8y/ZAkg=
@@ -119,6 +121,8 @@ go.opentelemetry.io/collector/exporter v1.50.0 h1:CgzSk8+nVki5pAHe9F2LR0hn8U5OD6
 go.opentelemetry.io/collector/exporter v1.50.0/go.mod h1:0JyxyYufP9G2puO72T68/10qXfbZvOSUFDla/yXyGQM=
 go.opentelemetry.io/collector/exporter/exporterhelper v0.144.0 h1:Ea1N1MVaaBUrsolDFazVF1PiT+uD5I/cbKxl5ezXLmw=
 go.opentelemetry.io/collector/exporter/exporterhelper v0.144.0/go.mod h1:UQ2QRWRjfJjHlc/H48ZwppLmVcoFFhkUkH/Eb9G3L4I=
+go.opentelemetry.io/collector/exporter/exporterhelper/xexporterhelper v0.144.0 h1:/Kj/t8wqy1j/afjoEnC3SFCW9JnjMAX4WWawtKQ8ZbE=
+go.opentelemetry.io/collector/exporter/exporterhelper/xexporterhelper v0.144.0/go.mod h1:QWqWna25TonCn1DLO7A6FRtc+18MWRji0yHvw2h9DUg=
 go.opentelemetry.io/collector/exporter/exportertest v0.144.0 h1:h/xHMQmvEaeYwrqEPsXxSvMEGZ0shaCOCbq1/l+2NLU=
 go.opentelemetry.io/collector/exporter/exportertest v0.144.0/go.mod h1:KD63zSYD8S5txFTcW9cC9Ru3UxK/HLKTH5ZZxAmJy/Q=
 go.opentelemetry.io/collector/exporter/xexporter v0.144.0 h1:Ztloi1hbCesqAv0TV7xcuClKiDyA6vNwuHl69CXV/LM=
