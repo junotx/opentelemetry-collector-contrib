@@ -12,17 +12,20 @@ import (
 	"go.opentelemetry.io/collector/config/configretry"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/exporter/exporterhelper"
+	"go.opentelemetry.io/collector/exporter/exporterhelper/xexporterhelper"
+	"go.opentelemetry.io/collector/exporter/xexporter"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/dorisexporter/internal/metadata"
 )
 
 func NewFactory() exporter.Factory {
-	return exporter.NewFactory(
+	return xexporter.NewFactory(
 		metadata.Type,
 		createDefaultConfig,
-		exporter.WithLogs(createLogsExporter, metadata.LogsStability),
-		exporter.WithTraces(createTracesExporter, metadata.TracesStability),
-		exporter.WithMetrics(createMetricsExporter, metadata.MetricsStability),
+		xexporter.WithLogs(createLogsExporter, metadata.LogsStability),
+		xexporter.WithTraces(createTracesExporter, metadata.TracesStability),
+		xexporter.WithMetrics(createMetricsExporter, metadata.MetricsStability),
+		xexporter.WithProfiles(createProfilesExporter, metadata.ProfilesStability),
 	)
 }
 
@@ -35,9 +38,10 @@ func createDefaultConfig() component.Config {
 		QueueSettings: exporterhelper.NewDefaultQueueConfig(),
 		BackOffConfig: configretry.NewDefaultBackOffConfig(),
 		Table: Table{
-			Logs:    "otel_logs",
-			Traces:  "otel_traces",
-			Metrics: "otel_metrics",
+			Logs:     "otel_logs",
+			Traces:   "otel_traces",
+			Metrics:  "otel_metrics",
+			Profiles: "otel_profiles",
 		},
 		Database:            "otel",
 		CreateSchema:        true,
@@ -93,6 +97,23 @@ func createMetricsExporter(ctx context.Context, set exporter.Settings, cfg compo
 		set,
 		cfg,
 		exporter.pushMetricData,
+		exporterhelper.WithStart(exporter.start),
+		exporterhelper.WithShutdown(exporter.shutdown),
+		// we config the timeout option in http client, so we don't need to set timeout here
+		exporterhelper.WithTimeout(exporterhelper.TimeoutConfig{Timeout: 0}),
+		exporterhelper.WithQueue(c.QueueSettings),
+		exporterhelper.WithRetry(c.BackOffConfig),
+	)
+}
+
+func createProfilesExporter(ctx context.Context, set exporter.Settings, cfg component.Config) (xexporter.Profiles, error) {
+	c := cfg.(*Config)
+	exporter := newProfilesExporter(set.Logger, c, set.TelemetrySettings)
+	return xexporterhelper.NewProfiles(
+		ctx,
+		set,
+		cfg,
+		exporter.pushProfilesData,
 		exporterhelper.WithStart(exporter.start),
 		exporterhelper.WithShutdown(exporter.shutdown),
 		// we config the timeout option in http client, so we don't need to set timeout here
