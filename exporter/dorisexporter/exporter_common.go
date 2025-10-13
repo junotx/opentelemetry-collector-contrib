@@ -143,7 +143,11 @@ type metric interface {
 	dMetricGauge | dMetricSum | dMetricHistogram | dMetricExponentialHistogram | dMetricSummary
 }
 
-func toJSONLines[T dLog | dTrace | metric](data []*T) ([]byte, error) {
+type profile interface {
+	dProfileSample | dProfileStack
+}
+
+func toJSONLines[T dLog | dTrace | metric | profile](data []*T) ([]byte, error) {
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
 	for _, d := range data {

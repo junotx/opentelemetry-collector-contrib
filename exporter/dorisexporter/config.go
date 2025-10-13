@@ -61,6 +61,8 @@ type Table struct {
 	Traces string `mapstructure:"traces"`
 	// Metrics is the table name for metrics.
 	Metrics string `mapstructure:"metrics"`
+	// Profiles is the table name for profiles.
+	Profiles string `mapstructure:"profiles"`
 }
 
 func (cfg *Config) Validate() (err error) {
@@ -155,4 +157,20 @@ func (cfg *Config) propertiesStr() string {
 // // propertiesStrForUniqueKey returns the properties string for unique key tables.
 func (cfg *Config) propertiesStrForUniqueKey() string {
 	return fmt.Sprintf(properties, cfg.ReplicationNum, compactionPolicySizeBased, cfg.startHistoryDays(), cfg.CreateHistoryDays)
+}
+
+const (
+	propertiesForNoDynamicPartition = `
+PROPERTIES (
+"replication_num" = "%d",
+"compaction_policy" = "%s",
+"compression" = "zstd",
+"inverted_index_storage_format" = "V2"
+)
+`
+)
+
+// propertiesStrForNoDynamicPartition returns the properties string for tables with no dynamic partition.
+func (cfg *Config) propertiesStrForNoDynamicPartition() string {
+	return fmt.Sprintf(propertiesForNoDynamicPartition, cfg.ReplicationNum, compactionPolicySizeBased)
 }
