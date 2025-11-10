@@ -12,6 +12,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlmetric"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofile"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofilesample"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspan"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspanevent"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor/internal/logs"
@@ -44,6 +45,10 @@ func DefaultProfileFunctions() []ottl.Factory[ottlprofile.TransformContext] {
 	return slices.Collect(maps.Values(defaultProfileFunctionsMap()))
 }
 
+func DefaultProfileSampleFunctions() []ottl.Factory[ottlprofilesample.TransformContext] {
+	return slices.Collect(maps.Values(defaultProfileSampleFunctionsMap()))
+}
+
 func defaultLogFunctionsMap() map[string]ottl.Factory[ottllog.TransformContext] {
 	return logs.LogFunctions()
 }
@@ -66,6 +71,10 @@ func defaultSpanEventFunctionsMap() map[string]ottl.Factory[ottlspanevent.Transf
 
 func defaultProfileFunctionsMap() map[string]ottl.Factory[ottlprofile.TransformContext] {
 	return profiles.ProfileFunctions()
+}
+
+func defaultProfileSampleFunctionsMap() map[string]ottl.Factory[ottlprofilesample.TransformContext] {
+	return profiles.ProfileSampleFunctions()
 }
 
 func mergeFunctionsToMap[K any](functionMap map[string]ottl.Factory[K], functions []ottl.Factory[K]) map[string]ottl.Factory[K] {

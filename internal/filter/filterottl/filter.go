@@ -11,6 +11,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlmetric"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofile"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofilesample"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlresource"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlscope"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspan"
@@ -140,6 +141,27 @@ func NewBoolExprForProfileWithOptions(conditions []string, functions map[string]
 		return nil, err
 	}
 	c := ottlprofile.NewConditionSequence(statements, set, ottlprofile.WithConditionSequenceErrorMode(errorMode))
+	return &c, nil
+}
+
+// NewBoolExprForProfileSample creates a BoolExpr[ottlprofilesample.TransformContext] that will return true if any of the given OTTL conditions evaluate to true.
+// The passed in functions should use the ottlprofilesample.TransformContext.
+// If a function named `match` is not present in the function map it will be added automatically so that parsing works as expected
+func NewBoolExprForProfileSample(conditions []string, functions map[string]ottl.Factory[ottlprofilesample.TransformContext], errorMode ottl.ErrorMode, set component.TelemetrySettings) (*ottl.ConditionSequence[ottlprofilesample.TransformContext], error) {
+	return NewBoolExprForProfileSampleWithOptions(conditions, functions, errorMode, set, nil)
+}
+
+// NewBoolExprForProfileSampleWithOptions is like NewBoolExprForProfileSample, but with additional options.
+func NewBoolExprForProfileSampleWithOptions(conditions []string, functions map[string]ottl.Factory[ottlprofilesample.TransformContext], errorMode ottl.ErrorMode, set component.TelemetrySettings, parserOptions []ottl.Option[ottlprofilesample.TransformContext]) (*ottl.ConditionSequence[ottlprofilesample.TransformContext], error) {
+	parser, err := ottlprofilesample.NewParser(functions, set, parserOptions...)
+	if err != nil {
+		return nil, err
+	}
+	statements, err := parser.ParseConditions(conditions)
+	if err != nil {
+		return nil, err
+	}
+	c := ottlprofilesample.NewConditionSequence(statements, set, ottlprofilesample.WithConditionSequenceErrorMode(errorMode))
 	return &c, nil
 }
 

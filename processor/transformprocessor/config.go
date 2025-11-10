@@ -19,6 +19,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlmetric"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofile"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofilesample"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspan"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspanevent"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor/internal/common"
@@ -50,12 +51,13 @@ type Config struct {
 	FlattenData bool `mapstructure:"flatten_data"`
 	logger      *zap.Logger
 
-	dataPointFunctions map[string]ottl.Factory[ottldatapoint.TransformContext]
-	logFunctions       map[string]ottl.Factory[ottllog.TransformContext]
-	metricFunctions    map[string]ottl.Factory[ottlmetric.TransformContext]
-	spanEventFunctions map[string]ottl.Factory[ottlspanevent.TransformContext]
-	spanFunctions      map[string]ottl.Factory[ottlspan.TransformContext]
-	profileFunctions   map[string]ottl.Factory[ottlprofile.TransformContext]
+	dataPointFunctions     map[string]ottl.Factory[ottldatapoint.TransformContext]
+	logFunctions           map[string]ottl.Factory[ottllog.TransformContext]
+	metricFunctions        map[string]ottl.Factory[ottlmetric.TransformContext]
+	spanEventFunctions     map[string]ottl.Factory[ottlspanevent.TransformContext]
+	spanFunctions          map[string]ottl.Factory[ottlspan.TransformContext]
+	profileFunctions       map[string]ottl.Factory[ottlprofile.TransformContext]
+	profileSampleFunctions map[string]ottl.Factory[ottlprofilesample.TransformContext]
 }
 
 // Unmarshal is used internally by mapstructure to parse the transformprocessor configuration (Config),
@@ -184,7 +186,7 @@ func (c *Config) Validate() error {
 	}
 
 	if len(c.ProfileStatements) > 0 {
-		pc, err := common.NewProfileParserCollection(component.TelemetrySettings{Logger: zap.NewNop()}, common.WithProfileParser(c.profileFunctions))
+		pc, err := common.NewProfileParserCollection(component.TelemetrySettings{Logger: zap.NewNop()}, common.WithProfileParser(c.profileFunctions), common.WithProfileSampleParser(c.profileSampleFunctions))
 		if err != nil {
 			return err
 		}

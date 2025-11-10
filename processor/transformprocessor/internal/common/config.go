@@ -15,20 +15,21 @@ var _ ottl.StatementsGetter = (*ContextStatements)(nil)
 type ContextID string
 
 const (
-	Resource  ContextID = "resource"
-	Scope     ContextID = "scope"
-	Span      ContextID = "span"
-	SpanEvent ContextID = "spanevent"
-	Metric    ContextID = "metric"
-	DataPoint ContextID = "datapoint"
-	Log       ContextID = "log"
-	Profile   ContextID = "profile"
+	Resource      ContextID = "resource"
+	Scope         ContextID = "scope"
+	Span          ContextID = "span"
+	SpanEvent     ContextID = "spanevent"
+	Metric        ContextID = "metric"
+	DataPoint     ContextID = "datapoint"
+	Log           ContextID = "log"
+	Profile       ContextID = "profile"
+	ProfileSample ContextID = "profilesample"
 )
 
 func (c *ContextID) UnmarshalText(text []byte) error {
 	str := ContextID(strings.ToLower(string(text)))
 	switch str {
-	case Resource, Scope, Span, SpanEvent, Metric, DataPoint, Log, Profile:
+	case Resource, Scope, Span, SpanEvent, Metric, DataPoint, Log, Profile, ProfileSample:
 		*c = str
 		return nil
 	default:

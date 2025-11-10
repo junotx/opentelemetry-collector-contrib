@@ -14,6 +14,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlmetric"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofile"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlprofilesample"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlresource"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlscope"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspan"
@@ -55,6 +56,10 @@ func StandardLogFuncs() map[string]ottl.Factory[ottllog.TransformContext] {
 
 func StandardProfileFuncs() map[string]ottl.Factory[ottlprofile.TransformContext] {
 	return ottlfuncs.StandardConverters[ottlprofile.TransformContext]()
+}
+
+func StandardProfileSampleFuncs() map[string]ottl.Factory[ottlprofilesample.TransformContext] {
+	return ottlfuncs.StandardConverters[ottlprofilesample.TransformContext]()
 }
 
 func StandardResourceFuncs() map[string]ottl.Factory[ottlresource.TransformContext] {
