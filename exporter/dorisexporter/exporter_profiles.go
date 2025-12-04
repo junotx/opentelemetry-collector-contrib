@@ -21,6 +21,12 @@ import (
 //go:embed sql/profiles_sample_ddl.sql
 var profilesSampleDDL string
 
+//go:embed sql/profiles_stack_ddl.sql
+var profilesStackDDL string
+
+//go:embed sql/profiles_stack_job.sql
+var profilesStackJob string
+
 type dProfileSample struct {
 	ServiceName string         `json:"service_name"`
 	Timestamp   string         `json:"timestamp"`
@@ -34,9 +40,6 @@ type dProfileSample struct {
 	SampleValue int64          `json:"sample_value"`
 	StackHash   uint64         `json:"stack_hash"`
 }
-
-//go:embed sql/profiles_stack_ddl.sql
-var profilesStackDDL string
 
 type dProfileStack struct {
 	ServiceName string   `json:"service_name"`
@@ -82,10 +85,53 @@ func (e *profilesExporter) start(ctx context.Context, host component.Host) error
 				return err
 			}
 		}
+
+		// TODO doris does not support job for data deletion
+		// dropJob := e.formatDropProfilesStackJob()
+		// _, err = conn.ExecContext(ctx, dropJob)
+		// if err != nil {
+		// 	e.logger.Warn("failed to drop job", zap.Error(err))
+		// }
+
+		// if e.cfg.HistoryDays > 0 {
+		// 	job := e.formatProfilesStackJob()
+		// 	_, err = conn.ExecContext(ctx, job)
+		// 	if err != nil {
+		// 		e.logger.Warn("failed to create job", zap.Error(err))
+		// 	}
+		// }
+
 	}
 
 	go e.reporter.report()
 	return nil
+}
+
+func (e *profilesExporter) formatDropProfilesStackJob() string {
+	return fmt.Sprintf(
+		"DROP JOB where jobName = '%s:%s_stack_clean_expired_data_daily';",
+		e.cfg.Database,
+		e.cfg.Traces,
+	)
+}
+
+func (e *profilesExporter) formatProfilesStackJob() string {
+	nowUTC := time.Now().UTC()
+	beginTime := time.Date(
+		nowUTC.Year(),
+		nowUTC.Month(),
+		nowUTC.Day(),
+		1, 0, 0, 0,
+		nowUTC.Location(),
+	)
+	return fmt.Sprintf(
+		profilesStackJob,
+		e.cfg.Database,
+		e.cfg.Profiles,
+		beginTime.Format(time.DateTime),
+		e.cfg.Profiles,
+		e.cfg.HistoryDays,
+	)
 }
 
 func (e *profilesExporter) shutdown(_ context.Context) error {
@@ -148,30 +194,36 @@ func (e *profilesExporter) pushProfilesData(ctx context.Context, pd pprofile.Pro
 					var stackStrings []string
 					for _, locationIndex := range stack.LocationIndices().All() {
 						if locationIndex := int(locationIndex); locationIndex < locationTable.Len() {
-							for _, line := range locationTable.At(locationIndex).Lines().All() {
+							var lineStrings []string
+							location := locationTable.At(locationIndex)
+							for _, line := range location.Lines().All() {
 								if functionIndex := int(line.FunctionIndex()); functionIndex < functionTable.Len() {
 									function := functionTable.At(functionIndex)
 									name, filename := getFromStringTable(function.NameStrindex()), getFromStringTable(function.FilenameStrindex())
-									if name == "" {
-										name = "?"
+									if name != "" {
+										lineStrings = append(lineStrings, fmt.Sprintf("%s %s:%d", name, filename, function.StartLine()))
 									}
-									if filename == "" {
-										filename = "?"
-									}
-									ss := fmt.Sprintf("%s %s:%d", name, filename, function.StartLine())
-									stackStrings = append(stackStrings, ss)
 								}
+							}
+							if len(lineStrings) == 0 {
+								stackStrings = append(stackStrings, fmt.Sprintf("%#x", location.Address()))
+							} else {
+								stackStrings = append(stackStrings, lineStrings...)
 							}
 						}
 					}
 
-					stackHash := StackHash(stackStrings)
-					stacks = append(stacks, &dProfileStack{
-						ServiceName: serviceName,
-						StackHash:   stackHash,
-						LastSeen:    lastSeen,
-						Stack:       stackStrings,
-					})
+					var profileStack *dProfileStack
+					if len(stackStrings) > 0 {
+						stackHash := StackHash(stackStrings)
+						profileStack = &dProfileStack{
+							ServiceName: serviceName,
+							StackHash:   stackHash,
+							LastSeen:    lastSeen,
+							Stack:       stackStrings,
+						}
+						stacks = append(stacks, profileStack)
+					}
 
 					attributes := map[string]any{}
 					for _, attributeindex := range sample.AttributeIndices().All() {
@@ -193,7 +245,8 @@ func (e *profilesExporter) pushProfilesData(ctx context.Context, pd pprofile.Pro
 						if i < sample.Values().Len() {
 							sampleValue = sample.Values().At(i)
 						}
-						samples = append(samples, &dProfileSample{
+
+						sample := &dProfileSample{
 							ServiceName: serviceName,
 							Timestamp:   e.formatTime(pcommon.Timestamp(timestampsUnixNano).AsTime()),
 							Attributes:  attributes,
@@ -204,13 +257,17 @@ func (e *profilesExporter) pushProfilesData(ctx context.Context, pd pprofile.Pro
 							PeriodUnit:  periodUnit,
 							Period:      period,
 							SampleValue: sampleValue,
-							StackHash:   stackHash,
-						})
+						}
+						if profileStack != nil {
+							sample.StackHash = profileStack.StackHash
+						}
+						samples = append(samples, sample)
 					}
 				}
 			}
 		}
 	}
+
 	if err := e.pushProfilesStack(ctx, stacks); err != nil {
 		return err
 	}
